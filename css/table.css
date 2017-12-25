@@ -1,0 +1,46 @@
+@CHARSET "UTF-8";
+
+#a {
+
+    font-size: 20px;
+    font-style: italic;
+}
+
+table {
+
+    border: 2px solid black;
+    border-collapse: separate;
+    border-spacing: 5px;
+    margin: 0 auto;
+}
+
+th {
+
+    border: 1px solid black;
+    padding: 15px;
+    text-align: center;
+    font-size: 15px;
+}
+
+td {
+
+    border: 1px solid black;
+    padding: 15px;
+    background-color: #F9E3AF;
+    text-align: center;
+    font-size: 15px;
+}
+
+div {
+
+    line-height: 40px;
+    width: 400px;
+    height: 300px;
+    border: 2px;
+    margin: 0 auto;
+    text-align: center;
+    background-color: #F9E3AF;
+    font-size: 20px;
+    margin-top: 40px;
+    border: 2px solid black;
+}
