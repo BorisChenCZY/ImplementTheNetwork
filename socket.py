@@ -1,5 +1,6 @@
 AF_INET = 2
 SOCK_STREAM = 1
+RECEIVED_BUFFER_SIZE = 1048576 # todo discuss the buffer size, currently 1GMb
 
 from Exceptions import *
 import threading
@@ -8,9 +9,23 @@ import time
 
 
 class socket():
+    CLOSED = 0
+    LISTEN = 1
+    SYN_RCVD = 2
+    ESTABLISHED = 3
+    CLOSE_WAIT = 4
+    LAST_ACK = 5
+    SYN_SENT = 6
+    FIN_WAIT_1 = 7
+    FIN_WAIT_2 = 8
+    TIME_WAIT = 9
+
     def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0):
         self.__family = family
         self.__type = type
+        self.__address = None
+        self.__data = None
+        self.__status = self.CLOSED
 
     def bind(self, address):
         """
@@ -20,17 +35,20 @@ class socket():
                 pair (host, port); the host must refer to the local host. For raw packet
                 sockets the address is a tuple (ifname, proto [,pkttype [,hatype]])
                 """
-        pass
+        self.__address = address
 
     def listen(self, backlog=None):
         """
-                listen([backlog])
+                        listen([backlog])
 
-                Enable a server to accept connections.  If backlog is specified, it must be
-                at least 0 (if it is lower, it is set to 0); it specifies the number of
-                unaccepted connections that the system will allow before refusing new
-                connections. If not specified, a default reasonable value is chosen.
-                """
+                        Enable a server to accept connections.  If backlog is specified, it must be
+                        at least 0 (if it is lower, it is set to 0); it specifies the number of
+                        unaccepted connections that the system will allow before refusing new
+                        connections. If not specified, a default reasonable value is chosen.
+                        """
+        if not self.__address:
+            raise AddressNotSpecified("Did you bind address for this socket?")
+
         pass
 
     def accept(self):
@@ -52,7 +70,20 @@ class socket():
         # if getdefaulttimeout() is None and self.gettimeout():
         #     sock.setblocking(True)
         # return sock, addr
-        pass
+
+        # if not self.__address:
+        #     raise AddressNotSpecified("Did you bind address for this socket?")
+        if self.__status == self.CLOSED:
+            raise ClosedException("The socket is closed, did you start listen process?")
+
+        self.__status = self.LISTEN
+
+        while 1:
+            if self.__status != self.LISTEN:
+                raise StatusException("The socket is not listening.")
+            if self.data == None:
+                continue
+            # todo here
 
     def recv(self, buffersize, flags=None):  # real signature unknown; restored from __doc__
         """
@@ -63,7 +94,14 @@ class socket():
         at least one byte is available or until the remote end is closed.  When
         the remote end is closed and all data is read, return the empty string.
         """
-        pass
+        if self.__status == self.CLOSED:
+            raise ClosedException("The socket is closed, did you start listen process?")
+
+        while self.data == None:
+            pass
+        return_data = self.data[:buffersize]
+        self.data = self.data[buffersize:]
+        return return_data
 
     def send(self, data, flags=None):  # real signature unknown; restored from __doc__
         """
@@ -78,7 +116,8 @@ class socket():
             raise TypeNotRightException("type is not correct, is the socket assigned TCP protocol?")
 
         NextSeqNum: int = 0
-
+        while 1:
+            pass
 
     def close(self):  # real signature unknown; restored from __doc__
         """
@@ -103,3 +142,14 @@ class socket():
                 self.time_out = True
                 self.timer_thread = None
                 return
+
+    def _start_server(self):
+        from LinkLayer import LinkLayer, util
+        linkLayer = LinkLayer(self._receive_from_Network)
+
+    def _receive_from_Network(self, frame):
+        src_mac = frame.src_mac
+        dst_mac = frame.dst_mac
+        self.data = frame.payload
+        # todo
+        pass
