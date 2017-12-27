@@ -8,3 +8,6 @@ class Network():
 
     def retrive(self):
         pass
+
+    def remaining_buffer(self):
+        pass

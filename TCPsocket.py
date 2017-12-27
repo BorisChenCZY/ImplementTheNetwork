@@ -26,13 +26,13 @@ class socket():
     # const
     TIME_INTERVAL = 100
 
-    def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0):
-        self.__family = family
-        self.__type = type
+    def __init__(self, remote_address = None, proto=0):
+        # self.__family = family
+        # self.__type = type
         self.__address = None
         self.__data = b''
         self.__status = self.CLOSED
-
+        self.remote_address = remote_address
 
     def bind(self, address):
         """
@@ -117,9 +117,9 @@ class socket():
         is a pair (host, port).
         """
         self.__network = Network.Network(self.__address, address)
-
+        self.__remote_address = address
         tcp = TCP()
-        tcp.build(type=TCP.SEND_SYN, src_port=self.__address[1], dst_port=address[1])
+        tcp.build(type=TCP.SEND_SYN, src_port=self.__address[1], dst_port=self.__remote_address[1])
         self.__network.send(bytes(tcp))
         self.__status = self.SYN_SENT
 
@@ -156,6 +156,12 @@ class socket():
         return_data = self.data[:buffersize]
         self.data = self.data[buffersize:]
 
+        # send ACK
+        tcp = TCP()
+        # todo send ACK here; you may need to compute the ACKnumber first
+        # todo after receive, send ack contain receive window
+        # todo write a dead loop to receive and compute
+        # todo question is how to define buffer
         return return_data
 
     def send(self, data, flags=None):  # real signature unknown; restored from __doc__
@@ -167,10 +173,22 @@ class socket():
                 sent; this may be less than len(data) if the network is busy.
                 """
 
-        if self.__type != SOCK_STREAM:
-            raise TypeNotRightException("type is not correct, is the socket assigned TCP protocol?")
+        # if self.__type != SOCK_STREAM:
+        #     raise TypeNotRightException("type is not correct, is the socket assigned TCP protocol?")
+        # NextSeqNum: int = 0
+
+        if not self.remote_address:
+            raise RemoteAddressNotSpecified("Remote address not specified, have you connected yet?")
+        # pack data
+        # tcp = TCP()
+        # tcp.build(type=tcp.SEND_DATA, src_port= self.__address[1], dst_port=self.__remote_address[1], data=data)
 
         NextSeqNum: int = 0
+        SendBase: int = 0
+
+        # todo use flow control to find the length of segment to send.
+        # todo receive window is the key
+        # todo the problem is how to store the info in receive window
         while 1:
             pass
 
@@ -187,7 +205,7 @@ class socket():
 
     def check_time(self, start_time, time_interval):
         self.current_pid = os.getpid()
-        pid = os.get_pid()
+        pid = os.getpid()
         while 1:
             time.sleep(time_interval * 0.1)
             if self.current_pid != pid:
@@ -198,17 +216,17 @@ class socket():
                 self.timer_thread = None
                 return
 
-    def _start_server(self):
-        from LinkLayer import LinkLayer, util
-        linkLayer = LinkLayer(self._receive_from_Network)
+    # def _start_server(self):
+    #     from LinkLayer import LinkLayer, util
+    #     linkLayer = LinkLayer(self._receive_from_Network)
+    #
+    # def _receive_from_Network(self, frame):
+    #     src_mac = frame.src_mac
+    #     dst_mac = frame.dst_mac
+    #     ip = '127.0.0.1'
+    #     self.data.append((frame.payload, ip))
+    #     # todo
+    #     pass
 
-    def _receive_from_Network(self, frame):
-        src_mac = frame.src_mac
-        dst_mac = frame.dst_mac
-        ip = '127.0.0.1'
-        self.data.append((frame.payload, ip))
-        # todo
-        pass
-
-    def _unpack_from_network_layer(self, data):
-        pass
+    # def _unpack_from_network_layer(self, data):
+    #     pass

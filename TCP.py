@@ -53,10 +53,10 @@ class TCP():
         self.header_length_and_unused = header_length
         self.reserved_and_control_bits = 0
         self.receive_window = receive_window
-        self.checksum = 0
         self.urgent_pointer = urgent_data_pointer
         self.options = options
         self.data = data
+        self.checksum = self.calculate_checksum()
 
         if type == self.SEND_SYN:
             self._create_flag_field(SYN = 1)
@@ -69,6 +69,8 @@ class TCP():
             return bytes(self)
         elif type == self.SEND_FIN:
             self._create_flag_field(FIN = 1)
+            return bytes(self)
+        elif type == self.SEND_DATA:
             return bytes(self)
 
 

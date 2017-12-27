@@ -9,3 +9,6 @@ class ClosedException(Exception):
 
 class StatusException(Exception):
     pass
+
+class RemoteAddressNotSpecified(Exception):
+    pass
