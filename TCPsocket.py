@@ -3,6 +3,7 @@ SOCK_STREAM = 1
 RECEIVED_BUFFER_SIZE = 1048576 # todo discuss the buffer size, currently 1GMb
 
 from Exceptions import *
+from TCP import *
 import threading
 import os
 import time
@@ -24,7 +25,7 @@ class socket():
         self.__family = family
         self.__type = type
         self.__address = None
-        self.__data = None
+        self.__data = []
         self.__status = self.CLOSED
 
     def bind(self, address):
@@ -49,10 +50,10 @@ class socket():
         if not self.__address:
             raise AddressNotSpecified("Did you bind address for this socket?")
 
-        pass
+        self._start_server()
 
     def accept(self):
-        """accept() -> (socket object, address info)
+        """accept() -> address tuple
 
         Wait for an incoming connection.  Return a new socket
         representing the connection, and the address of the client.
@@ -79,11 +80,32 @@ class socket():
         self.__status = self.LISTEN
 
         while 1:
-            if self.__status != self.LISTEN:
+            if self.__status != self.LISTEN or self.__status != self.SYN_RCVD:
                 raise StatusException("The socket is not listening.")
-            if self.data == None:
+            if self.data == []:
                 continue
-            # todo here
+            else:
+                data, address = self.data.pop()
+                tcp = TCP()
+                tcp.from_bytes(data)
+                if self.__status == self.LISTEN:
+                    if tcp.SYN == 1:
+                        pass # todo send ACKSYN
+                        self.__status = self.SYN_RCVD
+                elif self.__status == self.SYN_RCVD:
+                    if tcp.ACK == 1:
+                        self.__status = self.ESTABLISHED
+                        return address
+
+    def connect(self, address):  # real signature unknown; restored from __doc__
+        """
+        connect(address)
+
+        Connect the socket to a remote address.  For IP sockets, the address
+        is a pair (host, port).
+        """
+        pass
+
 
     def recv(self, buffersize, flags=None):  # real signature unknown; restored from __doc__
         """
@@ -99,6 +121,7 @@ class socket():
 
         while self.data == None:
             pass
+
         return_data = self.data[:buffersize]
         self.data = self.data[buffersize:]
         return return_data
@@ -150,6 +173,10 @@ class socket():
     def _receive_from_Network(self, frame):
         src_mac = frame.src_mac
         dst_mac = frame.dst_mac
-        self.data = frame.payload
+        ip = '127.0.0.1'
+        self.data.append((frame.payload, ip))
         # todo
+        pass
+
+    def _unpack_from_network_layer(self, data):
         pass
