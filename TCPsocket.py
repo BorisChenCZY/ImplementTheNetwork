@@ -1,15 +1,17 @@
 AF_INET = 2
 SOCK_STREAM = 1
-RECEIVED_BUFFER_SIZE = 1048576 # todo discuss the buffer size, currently 1GMb
+RECEIVED_BUFFER_SIZE = 1048576  # todo discuss the buffer size, currently 1GMb
 
 from Exceptions import *
 from TCP import *
 import threading
 import os
 import time
+import Network
 
 
 class socket():
+    # status
     CLOSED = 0
     LISTEN = 1
     SYN_RCVD = 2
@@ -21,12 +23,16 @@ class socket():
     FIN_WAIT_2 = 8
     TIME_WAIT = 9
 
+    # const
+    TIME_INTERVAL = 100
+
     def __init__(self, family=AF_INET, type=SOCK_STREAM, proto=0):
         self.__family = family
         self.__type = type
         self.__address = None
-        self.__data = []
+        self.__data = b''
         self.__status = self.CLOSED
+
 
     def bind(self, address):
         """
@@ -50,7 +56,7 @@ class socket():
         if not self.__address:
             raise AddressNotSpecified("Did you bind address for this socket?")
 
-        self._start_server()
+        self.__network = Network.Network(self.__address)
 
     def accept(self):
         """accept() -> address tuple
@@ -82,15 +88,21 @@ class socket():
         while 1:
             if self.__status != self.LISTEN or self.__status != self.SYN_RCVD:
                 raise StatusException("The socket is not listening.")
-            if self.data == []:
+            if self.__status == self.LISTEN:
+                data, address = self.__network.retrive()
+            else:
+                data = tmp_network.retrive()
+            if data == b'':
                 continue
             else:
-                data, address = self.data.pop()
                 tcp = TCP()
                 tcp.from_bytes(data)
                 if self.__status == self.LISTEN:
                     if tcp.SYN == 1:
-                        pass # todo send ACKSYN
+                        tmp_network = Network.Network(self.__address, address)
+                        tcp = TCP()
+                        tcp.build(type=TCP.SEND_SYNACK, src_port=self.__address[1], dst_port=address[1])
+                        tmp_network.send(bytes(tcp))
                         self.__status = self.SYN_RCVD
                 elif self.__status == self.SYN_RCVD:
                     if tcp.ACK == 1:
@@ -104,8 +116,23 @@ class socket():
         Connect the socket to a remote address.  For IP sockets, the address
         is a pair (host, port).
         """
-        pass
+        self.__network = Network.Network(self.__address, address)
 
+        tcp = TCP()
+        tcp.build(type=TCP.SEND_SYN, src_port=self.__address[1], dst_port=address[1])
+        self.__network.send(bytes(tcp))
+        self.__status = self.SYN_SENT
+
+        while 1:
+            data = self.__network.retrive()
+            if data == b'':
+                continue
+            tcp = TCP()
+            tcp.from_bytes(data)
+            if tcp.SYN == 1 and tcp.ACK == 1:
+                tcp.build(type=tcp.ACK, src_port=self.__address[1], dst_port=address[1])
+                self.__network.send(bytes(tcp))
+                break
 
     def recv(self, buffersize, flags=None):  # real signature unknown; restored from __doc__
         """
@@ -116,14 +143,19 @@ class socket():
         at least one byte is available or until the remote end is closed.  When
         the remote end is closed and all data is read, return the empty string.
         """
-        if self.__status == self.CLOSED:
-            raise ClosedException("The socket is closed, did you start listen process?")
+        if self.__status != self.ESTABLISHED:
+            raise ClosedException("Connection has not been established?")
 
-        while self.data == None:
-            pass
+        while self.data == b'':
+            self.data = self.__network.retrive()
+            continue
 
+        # if self.data != None:
+        if buffersize > len(self.data):
+            buffersize = len(self.data)
         return_data = self.data[:buffersize]
         self.data = self.data[buffersize:]
+
         return return_data
 
     def send(self, data, flags=None):  # real signature unknown; restored from __doc__
