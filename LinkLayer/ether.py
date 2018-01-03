@@ -14,22 +14,21 @@ class IncomeHandler(threading.Thread):
     def run(self):
         while True:
             frame, address = self.link_layer.sock.recvfrom(MTU)
-            if address[1] != self.link_layer.config['port']:
-                # ignore any non common port
-                continue
+            # if address[1] != self.link_layer.config['port']:
+            #     # ignore any non common port
+            #     continue
             frame = Frame.unpack_frame(frame)
             if frame.src_mac not in self.link_layer.mac_table:
                 self.link_layer.mac_table[frame.src_mac] = address[0]
             # calling callback
-            # print(frame)
-            self.link_layer.callback(frame)
+            self.link_layer.callback(frame.payload)
 
 class LinkLayer:
     """
     LinkLayer class
     """
 
-    def __init__(self, callback, MAC=None):
+    def __init__(self, callback, MAC = None):
         with open('config.json') as reader:
             self.config = json.load(reader)
 
@@ -46,7 +45,6 @@ class LinkLayer:
         self.sock = socket(AF_INET, SOCK_DGRAM, 0)
         self.callback = callback
         self.sock.bind((self.listen, self.port))
-
         self.income_handler = IncomeHandler(self)
         self.income_handler.start()
 
@@ -58,14 +56,15 @@ class LinkLayer:
         :return: None
         """
         if random() < self.config['loss']:
-            # drop frame
+            print('\n[---------------------------------loss---------------------------------]\n')
             return
         if src_mac is None:
             src_mac = self.MAC
         frame = Frame.pack_frame(src_mac, dst_mac, payload)
         if dst_mac in self.mac_table:
-            self.sock.sendto(frame, (self.mac_table[dst_mac], self.port))
+            self.sock.sendto(frame, (self.mac_table[dst_mac], self.config['port']))
         else:
             # flood
             for _, ip in self.mac_table.items():
-                self.sock.sendto(frame, (ip, self.port))
+                if ip != self.listen:
+                    self.sock.sendto(frame, (ip, self.config['port']))

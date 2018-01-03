@@ -7,5 +7,6 @@ def callback(frame):
     print(util.mac_ntoa(dst_mac), data.decode())
 
 linkLayer = LinkLayer(callback)
+linkLayer.sendto()
 print(util.mac_ntoa(linkLayer.MAC))
 that_mac = '02:00:0A:14:6A:48'
