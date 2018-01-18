@@ -2,6 +2,7 @@ import struct
 import Router
 import UDP
 import ICMP
+import UDPsocket
 from Exceptions import *
 import TCPsocket
 
@@ -153,7 +154,7 @@ def push(datagram):
     if network.protocol == PROTOCOL_TCP:
         TCPsocket.TCPsocket.push(network.segment, network.src_ip)
     elif network.protocol == PROTOCOL_UDP:
-        UDP.push(network.segment, network.src_ip)
+        UDPsocket.push(network.segment, network.src_ip)
     elif network.protocol == PROTOCOL_ICMP:
         ICMP.push(network)
     else:

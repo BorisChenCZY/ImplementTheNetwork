@@ -3,11 +3,12 @@ import random
 import IP
 import UDP
 from LinkLayer import util
+from UDP import unpack, buffer
 
 
 class UDPsocket(object):
     def __init__ (self):
-        self.bind((get_ip(), get_port()))
+        self.bind((get_local_ip(), get_avaliable_port()))
     
     def bind (self, address):
         self.src_ip = address[0]
@@ -27,11 +28,17 @@ class UDPsocket(object):
     def close(self):
         del UDP.buffer[self.src_port]
         
-def get_ip():
+def get_local_ip():
     return util.get_local_ipv4_address()
 
-def get_port():
+def get_avaliable_port():
     port = random.randint(0, 65535)
     while port in UDP.buffer:
         port = random.randint(0, 65535)
     return port
+
+
+def push(segment, remote_ip):
+    udp = unpack(segment)
+    if udp.dst_port in buffer:
+        buffer[udp.dst_port].put((udp.payload, (remote_ip, udp.src_port)))

@@ -5,7 +5,7 @@ import time
 from mysocket import *
 import random
 #normal socket setting
-server_addr = '192.168.43.132'
+server_addr = '10.21.111.48'
 server_port = 6666
 ClientSocket = socket(AF_INET,SOCK_DGRAM)
 
@@ -42,12 +42,13 @@ def get_message():
         message, server_address = ClientSocket.recvfrom(2048)
         message = json.loads(message.decode())
         print(message)
-        if message["type"] == "chat":
-            print_in_main(message)
-        elif message["type"] == "userlist":
-            update_userlist(message)
-        elif message["type"] == "connect":
-            text_msglist.insert(END, message['content'] + '\n', 'blue')
+        if message:
+            if message["type"] == "chat":
+                print_in_main(message)
+            elif message["type"] == "userlist":
+                update_userlist(message)
+            elif message["type"] == "connect":
+                text_msglist.insert(END, message['content'] + '\n', 'blue')
 
 #send chating message to server, recording your name and time
 def send_message():

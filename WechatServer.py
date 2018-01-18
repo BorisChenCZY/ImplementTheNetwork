@@ -2,7 +2,7 @@ import json
 from mysocket import *
 
 #normal setting
-ip_addr = '192.168.43.132'
+ip_addr = '10.21.111.48'
 port = 6666
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind((ip_addr,port))

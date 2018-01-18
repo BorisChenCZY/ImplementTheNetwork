@@ -12,15 +12,15 @@ from Exceptions import *
 request_time = 0
 reply_ = 0
 
-class ICMP(object):
-    
-    def __init__(self, src_ip, dst_ip):
-        self.IP = IP.IP(IP.PROTOCOL_ICMP, src_ip, dst_ip)
-        
-    def send(self, icmp):
-        self.IP.send(icmp.pack())
+# class ICMP(object):
+#
+#     def __init__(self, src_ip, dst_ip):
+#         self.IP = IP.IP(IP.PROTOCOL_ICMP, src_ip, dst_ip)
+#
+#     def send(self, icmp):
+#         self.IP.send(icmp.pack())
 
-class icmp(object):
+class ICMP(object):
     
     def __init__(self, type, code):
         self.type = type
@@ -29,12 +29,14 @@ class icmp(object):
     def pack(self):
         return pack(self.type,self.code)
     
-    def __str__(self):
-        return
+    @staticmethod
+    def send(src_ip, dst_ip, icmp):
+        Network = IP.IP(IP.PROTOCOL_ICMP, src_ip, dst_ip)
+        Network.send(icmp.pack())
         
 def unpack(segment):
     type, code = struct.unpack('!BB', segment)
-    return icmp(type, code)
+    return ICMP(type, code)
 
 def pack(type, code):
     segment = struct.pack('!BB', type, code)
@@ -107,10 +109,7 @@ def send_ICMP(src_ip, dst_ip, type, code):
     :param code: ICMP code
     :return:
     '''
-    # reverse the current src and dst
-    ICMP_sender = ICMP(src_ip, dst_ip)
-    ICMP_sender.send(icmp(type, code))
-    # print(str(ICMP_dict[(type,code)]))
+    ICMP.send(src_ip, dst_ip, ICMP(type, code))
 
 ICMP_dict = {
       (8, 0) : get_request

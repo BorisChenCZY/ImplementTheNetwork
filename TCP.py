@@ -153,15 +153,7 @@ class TCP():
     def __str__(self):
         s = 'SYN:{} ACK:{} DATA:{}'.format(self.SYN, self.ACK, self.data.decode('utf-8'))
         return s
-    
-    def __del__(self):
-        pass
-    
-    
-    def send(self):
-        NextSeqNum = 0
-        while 1:
-            pass
+
     
     @staticmethod
     def unpack(bytes_):

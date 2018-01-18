@@ -171,14 +171,14 @@ class TCPsocket():
         flag_6 = False
         flag_12 = False
         while buffer_list['connecting'][address] == []:
-            if flag_3 and (time.time() - send_send_start_time >= 0.5):
+            if flag_3 and (time.time() - send_send_start_time >= 2):
                 print('waiting second hand time out, wait another 6s')
                 tmp_ip.send(bytes(tcp))
                 send_send_start_time = time.time()
                 flag_3 = False
                 flag_6 = True
                 send_send_start_time =time.time()
-            elif flag_6 and (time.time() - send_send_start_time >= 1):
+            elif flag_6 and (time.time() - send_send_start_time >= 2):
                 print('waiting second hand time out, wait another 12s')
                 tmp_ip.send(bytes(tcp))
                 send_send_start_time = time.time()
@@ -587,13 +587,13 @@ class TCPsocket():
         flag_12 = False
 
         while buffer_list['connecting'][remote_address] == []:
-            if flag_3 and time.time() - star_time >= 0.5:
+            if flag_3 and time.time() - star_time >= 2:
                 print('3s timeout')
                 self.__ip.send(bytes(tcp))
                 flag_3 = False
                 flag_6 = True
                 star_time = time.time()
-            elif flag_6 and time.time() - star_time >= 1:
+            elif flag_6 and time.time() - star_time >= 2:
                 print('6s timeout')
                 self.__ip.send(bytes(tcp))
                 flag_6 = False
@@ -649,14 +649,6 @@ class TCPsocket():
         self.__sending_process.start()
         print('connected')
 
-
-    def _retrive(self):
-        """
-        currently not in use!
-        :return:
-        """
-        if self.__remote_address:
-            buffer_list['connected'][self.__remote_address].pop()
 
 
     @staticmethod

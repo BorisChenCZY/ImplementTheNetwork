@@ -1,4 +1,3 @@
-import array
 import struct
 from Exceptions import *
 HEADER = 8
@@ -17,11 +16,7 @@ class udp(object):
         return 'src: %(src_port)s\n' \
                'dst: %(dst_port)s\n' \
                'payload: %(payload)s}\n' % self.__dict__
-    
-def push(segment, remote_ip):
-    udp = unpack(segment)
-    if udp.dst_port in buffer:
-        buffer[udp.dst_port].put((udp.payload, (remote_ip, udp.src_port)))
+
 
 def pack(src_port, dst_port, payload):
     length = len(payload) + HEADER

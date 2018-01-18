@@ -1,6 +1,6 @@
 import random
 from urllib.request import urlopen
-from Exceptions import *
+
 import ICMP
 import IP
 import UDP
@@ -98,11 +98,21 @@ def dijsktra():
                     min_cost[key[0]][1] = current_node
     for key in min_cost:
         value = min_cost[key]
-        if value[1]:
-            forwarding_table[value[1]] = key
+        path = []
+        if value[0] == 0:
+            path.append(key)
+        # find path by back propagation
+        while value[1] != None:
+            path.append(value[1])
+            value = min_cost[value[1]]
+        path.reverse()
+        if len(path)>1:
+            forwarding_table[key] = path[1]
+        elif len(path)==1:
+            forwarding_table[key] = path[0]
         else:
             forwarding_table[key] = key
-    print(forwarding_table)
+
 
 def send(datagram, dst_ip, nat = False): # todo read from file
     '''
@@ -129,12 +139,7 @@ def send(datagram, dst_ip, nat = False): # todo read from file
     if nat:
         # for end router, do NAT first
         datagram = NAT(datagram,'out')
-    try:
-        forward_ip = forwarding_table[dst_ip]
-    except:
-        raise HostUnreachableException
-    if forward_ip != WAN_ip:
-        dst_ip = forward_ip
+    dst_ip = forwarding_table[dst_ip]
     linklayer.sendto(util.ip2mac(dst_ip),datagram)
 
 
@@ -253,8 +258,15 @@ def callback(frame):
         if network.dst_ip == util.get_local_ipv4_address():
             IP.push(frame)
         elif network.dst_ip in forwarding_table:
-            print('forwaring to', forwarding_table[network.dst_ip])
-            dst_mac = util.ip2mac(forwarding_table[network.dst_ip])
+            forwarding_ip = forwarding_table[network.dst_ip]
+            if forwarding_ip != WAN_ip:
+                dst_ip = forwarding_ip
+                
+            else:
+                dst_ip = network.dst_ip
+            if dst_ip != forwarding_ip:
+                print('forwaring to', forwarding_table[network.dst_ip])
+            dst_mac = util.ip2mac(dst_ip)
             linklayer.sendto(dst_mac, frame)
         elif (network.dst_ip, transport.dst_port) in NAT_in :
             network.dst_ip, transport.dst_port = NAT_in[(network.dst_ip, transport.dst_port)]
