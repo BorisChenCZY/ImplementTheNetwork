@@ -62,7 +62,7 @@ We build mysocket the same shape of socket. It provide interfaces of
 Here is an example code.
 
 __TCP_server_demo.py__:
-```python3
+```python
 from mysocket import *
 from LinkLayer import util
 ip = util.get_local_ipv4_address()
@@ -81,7 +81,7 @@ while 1:
 ```
 
 __TCP_client_demo.py__:
-```python3
+```python
 from mysocket import *
 from LinkLayer import util
 ip = util.get_local_ipv4_address()
