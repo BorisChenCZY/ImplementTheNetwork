@@ -42,21 +42,21 @@
 
 We build mysocket the same shape of socket. It provide interfaces of
 
-- bind(local_address, remote_address = None)
+- `bind(local_address, remote_address = None)`
 	bind ip and address for future use.
-- close()
+- `close()`
 	close socket.
-- listen()
+- `listen()`
 	if the socket is build for TCP connection, it can listen.
-- accept()
+- `accept()`
 	if the socket is listening, it can accpet a client. If a client is acccept, a new mysocket with connection to the client is returned.
-- send(data, flags = None)
+- `send(data, flags = None)`
 	if the socket is built for TCP connection and the connection is eatablished. You can call the method to send data to the remote end.
-- sendto(data, flags = None)
+- `sendto(data, flags = None)`
 	if the socket is built for UDP connection, you can call this method to send data to specified address.
-- recv(buffersize)
+- `recv(buffersize)`
 	if the socket is built for TCP conenction, you can receive data. The method will be blocked if there is no data in buffer, and return until it has data in buffer.
-- recvfrom(buffersize)
+- `recvfrom(buffersize)`
 	if the socket is built for UDP connection, you can call this method to retrive data.
 
 Here is an example code.
@@ -102,13 +102,13 @@ We also provide more test files in this [github page](https://github.com/BorisCh
 
 You can find them of names:
 
-- WechatServer.py
+- `WechatServer.py`
 	UDP chat server.
 
-- WechatClient.py
+- `WechatClient.py`
 	UDP chat client.
 
-- icmp_demo.py
+- `icmp_demo.py`
 	ICMP test
 
 
